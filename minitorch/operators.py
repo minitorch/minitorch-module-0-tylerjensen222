@@ -1,6 +1,4 @@
-"""
-Collection of the core mathematical operators used throughout the code base.
-"""
+"""Collection of the core mathematical operators used throughout the code base."""
 
 import math
 
@@ -13,91 +11,93 @@ from typing import Callable, Iterable
 
 # Mathematical functions:
 # - mul
-def mul(x, y):
+def mul(x: float, y: float) -> float:
     return x * y
 
 
 # - id
-def id(x):
+def id(x: float) -> float:
     return x
 
 
 # - add
-def add(x, y):
+def add(x: float, y: float):
     return x + y
 
 
 # - neg
-
-
-def neg(x):
-    return -x
+def neg(x: float) -> float:
+    return mul(-1.0, x)
 
 
 # - lt
-def lt(x, y):
+def lt(x: float, y: float) -> bool:
     return x < y
 
 
 # - eq
-def eq(x, y):
+def eq(x: float, y: float):
     return x == y
 
 
 # - max
-def max(x, y):
+def max(x: float, y: float) -> float:
     if lt(x, y):
         return y
-    else:
-        return x
+    return x
+
+
+# - abs
+def abs(x: float, y: float) -> float:
+    return max(add(x, neg(y)), add(neg(x), y))
 
 
 # - is_close
-def is_close(x, y):
-    return lt(abs(add(x, neg(y))), 1e-2)
-
-
-# - sigmoid
-def sigmoid(x):
-    return 1.0 / add(1.0, exp(neg(x))) if lt(0, x) else exp(x) / add(1.0, exp(x))
-
-
-# - relu
-def relu(x):
-    return max(x, 0)
-
-
-# - log
-def log(x):
-    return math.log(x)
+def is_close(x: float, y: float, eps: float = 10e-2) -> bool:
+    return abs(x, y) < eps
 
 
 # - exp
-def exp(x):
+def exp(x: float) -> float:
     return math.exp(x)
 
 
+# - sigmoid
+def sigmoid(x: float) -> float:
+    return inv(1.0 + exp(neg(x))) if x >= 0.0 else mul(exp(x), inv(1.0 + exp(neg(x))))
+
+
+# - relu
+def relu(x: float) -> float:
+    return max(0.0, x)
+
+
+# - log
+def log(x: float) -> float:
+    return math.log(x)
+
+
 # - log_back
-def log_back(x, y):
-    return y / x
+def log_back(x: float, other: float):
+    return mul(inv(x), other)  # (1.0 / x) * other
 
 
 # - inv
-def inv(x):
-    return 1 / x
+def inv(x: float) -> float:
+    return 1.0 / x
 
 
 # - inv_back
-def inv_back(x, d):
-    return d * inv(x)
+def inv_back(x: float, other: float) -> float:
+    return mul(neg(1.0), mul(inv(x), inv(x)))  # (-1.0 * 1 / x^2) * other
 
 
 # - relu_back
-def relu_back(x, d):
-    if lt(0, x):
-        return d
-    else:
-        return 0
+def relu_back(x: float, other: float) -> float:
+    d = 0.0
+    if lt(0.0, x):
+        d = 1.0
+    return mul(d, other)
 
 
 #
@@ -117,41 +117,49 @@ def relu_back(x, d):
 
 # Implement the following core functions
 # - map
-def map(fn, iterable):
-    return (fn(item) for item in iterable)
+def map(l: Iterable, f: Callable) -> Iterable:
+    return [f(x) for x in l]
 
 
 # - zipWith
-def zipWith(fn, ls1: list[float], ls2: list[float]):
-    return [fn(item1, item2) for item1, item2 in zip(ls1, ls2)]
+def zipWith(l1: Iterable, l2: Iterable, f: Callable) -> Iterable:
+    return [f(x[0], x[1]) for x in zip(l1, l2)]
 
 
 # - reduce
-def reduce(fn, ls: list[float]):
-    value = ls[0]
-    for element in ls[1:]:
-        value = fn(value, element)
-    return value
+def reduce(l: Iterable, f: Callable):
+    if not l:
+        return
+    a = list(l)[0]
+    for x in list(l)[1:]:
+        a = f(a, x)
+    return a
 
 
+#
 # Use these to implement
 # - negList : negate a list
-def negList(ls: list[float]):
-    return map(neg, ls)
+def negList(l: Iterable) -> Iterable:
+    return map(l, neg)
 
 
 # - addLists : add two lists together
-def addLists(ls1: list[float], ls2: list[float]):
-    return zipWith(add, ls1, ls2)
+def addLists(l1: Iterable, l2: Iterable) -> Iterable:
+    return zipWith(l1, l2, add)
 
 
 # - sum: sum lists
-def sum(ls: list[float]):
-    if eq(len(ls), 0):
+def sum(l: Iterable):
+    if not l:
         return 0.0
-    return reduce(add, ls)
+    return reduce(l, add)
 
 
 # - prod: take the product of lists
-def prod(ls: list[float]) -> float:
-    return reduce(mul, ls)
+def prod(l: Iterable):
+    if not l:
+        return 1.0
+    return reduce(l, mul)
+
+
+# TODO: Implement for Task 0.3.
