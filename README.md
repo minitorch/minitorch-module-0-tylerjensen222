@@ -10,10 +10,10 @@
 
 **Assignment Submission**
 
-See **Screenshot 2024-08-30 at 9.20.22 AM.png**. 
+See **assignment_submition.png**. 
 
-Paramters:
+Hyperparameters:
 
-- linear.weight_0_0: -10.0
-- linear.weight_1_0: 0.03
-- linear.bias_0: 4.94
+LR: .05
+Epochs: 5000
+Hidden Layer Size: 128
